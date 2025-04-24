@@ -1,3 +1,21 @@
-export const tokinFunction = (tokin)=>{
-  localStorage.setItem("tokin" , tokin)
+// token qoshish
+export const saveTokin = (token)=>{
+  localStorage.setItem("token" , token)
 }
+// token  olish
+export const getToken = ()=>{
+  return localStorage.getItem("token")
+}
+
+getToken()
+
+// tekshirish
+
+export const isAuthenticated = () => {
+  return !!localStorage.getItem("token");
+};
+
+//tozalash
+export const logout = () => {
+  localStorage.removeItem("token");
+};
