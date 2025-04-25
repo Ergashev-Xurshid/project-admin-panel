@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { MdClose } from "react-icons/md";
 import { getToken } from '../../utils/auth';
+import { toast } from 'react-toastify';
 
-function CategoryMadal({setOpen}) {
-
+function CategoryMadal({setOpen , getCategory}) {
+  
   const [nameEn,setNameEn]= useState("");
   const [nameRu,setNameRu]= useState("");
   const [nameDe,setNameDe]= useState("");
@@ -15,17 +16,31 @@ function CategoryMadal({setOpen}) {
       method:"POST",
       headers:{
         "Content-type":"application/json",
-        "Authorization" : `Bearer ${getToken}`
+        "Authorization" : `Bearer ${getToken()}`
       },
       body: JSON.stringify({
-        "name_en": "nameEn",
-        "name_de": "nameDe",
-        "name_ru": "nameRu"
+        "name_en": nameEn,
+        "name_de": nameDe,
+        "name_ru": nameRu
       })
     })
     .then(res=>res.json())
-    .then(item=> console.log(item))
-    
+    .then(item=> {
+      if(item?.success){
+        toast.success("Category successfully"),
+        // ma'lumotlarni yangilash 
+        getCategory()
+        // modalni yopish 
+        setOpen(false)
+      }else{
+        toast.error("Category failed")
+      }
+    })
+
+    // formni tozalash 
+    setNameEn(""),
+    setNameDe(""),
+    setNameRu("")   
   }
 
 

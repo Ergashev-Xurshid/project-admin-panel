@@ -7,8 +7,6 @@ export const getToken = ()=>{
   return localStorage.getItem("token")
 }
 
-getToken()
-
 // tekshirish
 
 export const isAuthenticated = () => {

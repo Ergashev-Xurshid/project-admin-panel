@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import CategoryMadal from './modals/CategoryMadal'
+import { getToken } from '../utils/auth'
+import { toast } from 'react-toastify'
 
 function Category() {
 
@@ -10,7 +12,7 @@ function Category() {
 
 
   // get category 
-  const getCategory = () => {
+const getCategory = () => {
     fetch("https://back.ifly.com.uz/api/category")
       .then(res => res.json())
       .then(item => setData(item?.data)
@@ -19,8 +21,28 @@ function Category() {
 
   useEffect(() => {
     getCategory()
-  }, [data])
+  },[])
 
+
+  //delete category
+  const deleteCategory = (id)=>{
+
+    fetch(`https://back.ifly.com.uz/api/category/${id}`,{
+      method:"DELETE",
+      headers:{
+        "Content-type":"application/json",
+        "Authorization" : `Bearer ${getToken()}`
+      }})
+      .then(res=>res.json())
+      .then(item=> {
+        if(item?.success){
+          toast.success(item?.data?.message)
+          getCategory()
+        }else{
+          toast.error(item?.message?.message)
+        }
+      })      
+}
 
   return (
     <>
@@ -46,12 +68,14 @@ function Category() {
             {data.map((item, i) => (
               <tr key={i} className='text-center hover:bg-gray-100'>
                 <td className='border border-gray-300 p-2'>{item.id}</td>
-                <td className='border border-gray-300 p-2'>{item.name_de}</td>
                 <td className='border border-gray-300 p-2'>{item.name_en}</td>
                 <td className='border border-gray-300 p-2'>{item.name_ru}</td>
+                <td className='border border-gray-300 p-2'>{item.name_de}</td>
                 <td className='border border-gray-300 p-2 w-[200px]'>
                   <button className='px-4 py-2 mr-2 cursor-pointer bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition'>Edit</button>
-                  <button className='px-4 py-2 cursor-pointer bg-red-500 text-white rounded-lg hover:bg-red-600 transition'>Delete</button>
+                  <button 
+                    onClick={()=>deleteCategory(item.id)}
+                    className='px-4 py-2 cursor-pointer bg-red-500 text-white rounded-lg hover:bg-red-600 transition'>Delete</button>
                 </td>
               </tr>
             ))}
@@ -59,7 +83,7 @@ function Category() {
         </table>
       </div>
     </div>
-    {open &&  <CategoryMadal setOpen={setOpen}/>}
+    {open &&  <CategoryMadal setOpen={setOpen} getCategory={getCategory}/>}
     </>
   )
 }
