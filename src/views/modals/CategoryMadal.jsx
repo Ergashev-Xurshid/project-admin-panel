@@ -55,6 +55,7 @@ function CategoryMadal({setOpen , getCategory}) {
           <label>
             <p className='block mb-1 text-sm font-medium'>Category Name (EN)</p>
             <input
+              required
               value={nameEn}
               onChange={(e)=>setNameEn(e.target.value)}
               className='outline-none w-full p-2 border border-gray-300 rounded mb-1' 
@@ -63,6 +64,7 @@ function CategoryMadal({setOpen , getCategory}) {
           <label>
             <p className='block mb-1 text-sm font-medium'>Category Name (RU)</p>
             <input
+              required
               value={nameRu}
               onChange={(e)=>setNameRu(e.target.value)}
               className='outline-none w-full p-2 border border-gray-300 rounded mb-1' 
@@ -71,6 +73,7 @@ function CategoryMadal({setOpen , getCategory}) {
           <label>
             <p className='block mb-1 text-sm font-medium'>Category Name (DE)</p>
             <input
+              required
               value={nameDe}
               onChange={(e)=>setNameDe(e.target.value)}
               className='outline-none w-full p-2 border border-gray-300 rounded mb-1' 
