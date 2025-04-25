@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react'
+import CategoryMadal from './modals/CategoryMadal'
 
 function Category() {
 
+  // Open modal 
+  const [open , setOpen] = useState(false)
+
   const [data, setData] = useState([])
 
+
+  // get category 
   const getCategory = () => {
     fetch("https://back.ifly.com.uz/api/category")
       .then(res => res.json())
@@ -13,14 +19,17 @@ function Category() {
 
   useEffect(() => {
     getCategory()
-  }, [])
+  }, [data])
 
 
   return (
-    <div className='shadow-md p-6 bg-white rounded-lg'>
+    <>
+      <div className='shadow-md p-6 bg-white rounded-lg'>
       <div className='flex  justify-between'>
         <h2 className='font-bold text-xl mb-6'>Category</h2>
-        <button className='cursor-pointer text-white py-2 px-4 bg-green-500 hover:bg-green-600 rounded-lg mb-4 transition-all duration-150  '>Add Category</button>
+        <button
+          onClick={()=>setOpen(true)} 
+          className='cursor-pointer text-white py-2 px-4 bg-green-500 hover:bg-green-600 rounded-lg mb-4 transition-all duration-150  '>Add Category</button>
       </div>
       <div>
         <table className='min-w-full table-auto'>
@@ -50,6 +59,8 @@ function Category() {
         </table>
       </div>
     </div>
+    {open &&  <CategoryMadal setOpen={setOpen}/>}
+    </>
   )
 }
 
