@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { MdClose } from "react-icons/md";
+import { getToken } from '../../utils/auth';
 
 function CategoryMadal({setOpen}) {
 
@@ -13,9 +14,17 @@ function CategoryMadal({setOpen}) {
     fetch("https://back.ifly.com.uz/api/category",{
       method:"POST",
       headers:{
-        "Component-type":"application/json"
-      }
+        "Content-type":"application/json",
+        "Authorization" : `Bearer ${getToken}`
+      },
+      body: JSON.stringify({
+        "name_en": "nameEn",
+        "name_de": "nameDe",
+        "name_ru": "nameRu"
+      })
     })
+    .then(res=>res.json())
+    .then(item=> console.log(item))
     
   }
 
