@@ -3,7 +3,7 @@ import { toast } from 'react-toastify'
 import { getToken } from '../utils/auth'
 import DiscountModal from './modals/DiscountModal'
 import { noData } from '../assets'
-
+import { TailSpin } from 'react-loader-spinner';
 function Discount() {
 
   // Open modal 
@@ -82,10 +82,16 @@ function Discount() {
               ))}
             </tbody>}
           </table>
-          {data.length === 0 ? <div className='text-center py-6'>
-            <img src={noData} alt="nodata" className='mx-auto w-20' />
-            <p className="text-gray-500 mt-2">No Data Available</p>
-          </div> : <span></span>}
+          {data.length === 0 ? <TailSpin
+            height={80}
+            width={80}
+            color="#00ff00"
+            ariaLabel="loading"
+            radius="1"
+            wrapperStyle={{}}
+            wrapperClass=""
+            visible={true}
+          /> : <span></span>}
         </div>
       </div>
       {open && <DiscountModal setOpen={setOpen} getDiscounts={getDiscounts} />}
