@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { getToken } from '../utils/auth'
 import { toast } from 'react-toastify'
 import ColorModal from './modals/ColorModal'
+import { noData } from '../assets'
 
 function Colors() {
 
@@ -12,7 +13,7 @@ function Colors() {
   const [data, setData] = useState([])
 
 
-  // get category 
+  // get color 
   const getColors = () => {
     fetch("https://back.ifly.com.uz/api/colors")
       .then(res => res.json())
@@ -52,9 +53,9 @@ function Colors() {
       <div className='shadow-md p-6 bg-white rounded-lg'>
         <div className='flex  justify-between'>
           <h2 className='font-bold text-xl mb-6'>Colors</h2>
-          <button 
-          onClick={()=>setOpen(true)}
-          className='cursor-pointer text-white py-2 px-4 bg-green-500 hover:bg-green-600 rounded-lg mb-4 transition-all duration-150  '>Add Color</button>
+          <button
+            onClick={() => setOpen(true)}
+            className='cursor-pointer text-white py-2 px-4 bg-green-500 hover:bg-green-600 rounded-lg mb-4 transition-all duration-150  '>Add Color</button>
         </div>
         <div>
           <table className='min-w-full table-auto'>
@@ -67,7 +68,7 @@ function Colors() {
                 <th className='border border-gray-300 p-2'>Actions</th>
               </tr>
             </thead>
-            <tbody>
+            {data && <tbody>
               {data.map((item, i) => (
                 <tr key={i} className='text-center hover:bg-gray-100'>
                   <td className='border border-gray-300 p-2'>{item.id}</td>
@@ -82,11 +83,15 @@ function Colors() {
                   </td>
                 </tr>
               ))}
-            </tbody>
+            </tbody>}
           </table>
+          {data.length === 0 ? <div className='text-center py-6'>
+            <img src={noData} alt="nodata" className='mx-auto w-20' />
+            <p className="text-gray-500 mt-2">No Data Available</p>
+          </div> : <span></span>}
         </div>
       </div>
-      {open &&  <ColorModal setOpen={setOpen} getColors={getColors}/>}
+      {open && <ColorModal setOpen={setOpen} getColors={getColors} />}
     </>
   )
 }

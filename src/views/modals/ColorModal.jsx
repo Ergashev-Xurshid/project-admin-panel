@@ -26,13 +26,13 @@ function ColorModal({setOpen,getColors}) {
       .then(res=>res.json())
       .then(item=> {
         if(item?.success){
-          toast.success("Category successfully"),
+          toast.success("Color successfully"),
           // ma'lumotlarni yangilash 
           getColors()
           // modalni yopish 
           setOpen(false)
         }else{
-          toast.error("Category failed")
+          toast.error("Color failed")
         }
       })
   
