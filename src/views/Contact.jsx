@@ -2,6 +2,7 @@ import { noData } from '../assets'
 import React, { useEffect, useState } from 'react'
 import { getToken } from '../utils/auth'
 import { toast } from 'react-toastify'
+import ContactModal from './modals/ContactModal'
 
 function Contact() {
 
@@ -90,7 +91,7 @@ function Contact() {
         </div> : <span></span>}
       </div>
     </div>
-    {open && <ContactMadal setOpen={setOpen} getContact={getContact} />}
+    {open && <ContactModal setOpen={setOpen} getContact={getContact} />}
   </>
   )
 }
