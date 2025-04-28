@@ -3,11 +3,17 @@ import CategoryMadal from './modals/CategoryMadal'
 import { getToken } from '../utils/auth'
 import { toast } from 'react-toastify'
 import { noData } from '../assets'
+import CategoryEdit from './editModals/CategoryEdit'
 
 function Category() {
 
   // Open modal 
   const [open, setOpen] = useState(false)
+    // Edit modal 
+    const [editOpen, seteditOpen] = useState(false)
+
+  const [editID , setEditID] =useState("")
+  
 
   const [data, setData] = useState([])
 
@@ -74,7 +80,12 @@ function Category() {
                   <td className='border border-gray-300 p-2'>{item.name_ru}</td>
                   <td className='border border-gray-300 p-2'>{item.name_de}</td>
                   <td className='border border-gray-300 p-2 w-[200px]'>
-                    <button className='px-4 py-2 mr-2 cursor-pointer bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition'>Edit</button>
+                    <button 
+                      onClick={()=> {
+                        setEditID(item.id)
+                        seteditOpen(true)
+                      }} 
+                      className='px-4 py-2 mr-2 cursor-pointer bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition'>Edit</button>
                     <button
                       onClick={() => deleteCategory(item.id)}
                       className='px-4 py-2 cursor-pointer bg-red-500 text-white rounded-lg hover:bg-red-600 transition'>Delete</button>
@@ -90,6 +101,7 @@ function Category() {
         </div>
       </div>
       {open && <CategoryMadal setOpen={setOpen} getCategory={getCategory} />}
+      {editOpen && <CategoryEdit editID={editID} seteditOpen={seteditOpen} getCategory={getCategory} />}
     </>
   )
 }
