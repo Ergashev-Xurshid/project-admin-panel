@@ -70,7 +70,7 @@ function Sizes() {
             {data &&  <tbody>
               {data.map((item , i)=> (
             <tr key={i} className='text-center hover:bg-gray-100'>
-              <td className='border border-gray-300 p-2'>{item.id}</td>
+              <td className='border border-gray-300 p-2'>{i + 1}</td>
               <td className='border border-gray-300 p-2'>{item.size}</td>
               <td className='border border-gray-300 p-2 w-[200px]'>
                 <button className='px-4 py-2 mr-2 cursor-pointer bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition'>Edit</button>

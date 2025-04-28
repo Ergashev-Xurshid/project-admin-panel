@@ -67,7 +67,7 @@ function Faq() {
             {data && <tbody>
               {data.map((item, i) => (
                 <tr key={i} className='text-center hover:bg-gray-100'>
-                  <td className='border border-gray-300 p-2'>{item.id}</td>
+                  <td className='border border-gray-300 p-2'>{i + 1}</td>
                   <td className='border border-gray-300 p-2'>{item.question_en}</td>
                   <td className='border border-gray-300 p-2'>{item.answer_en}</td>
                   <td className='border border-gray-300 p-2 '>

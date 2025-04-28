@@ -3,7 +3,6 @@ import { toast } from 'react-toastify'
 import { getToken } from '../utils/auth'
 import DiscountModal from './modals/DiscountModal'
 import { noData } from '../assets'
-import { TailSpin } from 'react-loader-spinner';
 function Discount() {
 
   // Open modal 
@@ -67,7 +66,7 @@ function Discount() {
             {data && <tbody >
               {data.map((item, i) => (
                 <tr key={i} className='text-center hover:bg-gray-100'>
-                  <td className='border border-gray-300 p-2'>{item.id}</td>
+                  <td className='border border-gray-300 p-2'>{i + 1}</td>
                   <td className='border border-gray-300 p-2'>{item.discount}%</td>
                   <td className='border border-gray-300 p-2'>{item.started_at}</td>
                   <td className='border border-gray-300 p-2'>{item.finished_at}</td>
@@ -82,16 +81,10 @@ function Discount() {
               ))}
             </tbody>}
           </table>
-          {data.length === 0 ? <TailSpin
-            height={80}
-            width={80}
-            color="#00ff00"
-            ariaLabel="loading"
-            radius="1"
-            wrapperStyle={{}}
-            wrapperClass=""
-            visible={true}
-          /> : <span></span>}
+          {data.length === 0 ? <div className='text-center py-6'>
+            <img src={noData} alt="nodata" className='mx-auto w-20' />
+            <p className="text-gray-500 mt-2">No Data Available</p>
+          </div> : <span></span>}
         </div>
       </div>
       {open && <DiscountModal setOpen={setOpen} getDiscounts={getDiscounts} />}

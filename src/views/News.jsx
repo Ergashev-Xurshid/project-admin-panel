@@ -66,7 +66,7 @@ function News() {
           <tbody >
             {data.map((item, i) => (
               <tr key={i} className='text-center hover:bg-gray-100'>
-                <td className='border border-gray-300 p-2'>{item.id}</td>
+                <td className='border border-gray-300 p-2'>{i + 1}</td>
                 <td className='border border-gray-300 p-2 cursor-pointer'>
                 <img src={`https://back.ifly.com.uz/uploads/${item.image}`} alt="img" className='w-16 h-16 object-cover mx-auto rounded' />
                 </td>
