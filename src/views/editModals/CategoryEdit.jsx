@@ -1,54 +1,64 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { MdClose } from "react-icons/md";
 import { getToken } from '../../utils/auth';
 import { toast } from 'react-toastify';
 
-function CategoryEdit({editID , getCategory ,seteditOpen}) {
+function CategoryEdit({ editID, getCategory, seteditOpen, dataID }) {
 
-    const [nameEn,setNameEn]= useState("");
-    const [nameRu,setNameRu]= useState("");
-    const [nameDe,setNameDe]= useState("");
-  
-    const editCategoryItem =(e)=>{
-      e.preventDefault()
-  
-      fetch(`https://back.ifly.com.uz/api/category/${editID}`,{
-        method:"PATCH",
-        headers:{
-          "Content-type":"application/json",
-          "Authorization" : `Bearer ${getToken()}`
+  const [nameEn, setNameEn] = useState("");
+  const [nameRu, setNameRu] = useState("");
+  const [nameDe, setNameDe] = useState("");
+
+
+
+  useEffect(() => {
+    if (dataID) {
+      setNameEn(dataID.name_en || "");
+      setNameRu(dataID.name_ru || "");
+      setNameDe(dataID.name_de || "");
+    }
+  }, [dataID]);
+
+
+  const editCategoryItem = async (e) => {
+    e.preventDefault()
+
+    try {
+      const response = await fetch(`https://back.ifly.com.uz/api/category/${editID}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${getToken()}`
         },
         body: JSON.stringify({
-          "name_en": nameEn,
-          "name_de": nameDe,
-          "name_ru": nameRu
+          name_en: nameEn,
+          name_de: nameDe,
+          name_ru: nameRu
         })
-      })
-      .then(res=>res.json())
-      .then(item=> {
-        if(item?.success){
-          toast.success("Category edit successfully"),
-          // ma'lumotlarni yangilash 
-          getCategory()
-          // modalni yopish 
-          seteditOpen(false)
-        }else{
-          toast.error("Category edit failed")
-        }
-      })
-  
-      // formni tozalash 
-      setNameEn(""),
-      setNameDe(""),
-      setNameRu("")   
+      });
+
+      const item = await response.json();
+
+      if (item?.success) {
+        toast.success("Category edited successfully");
+        getCategory();       
+        seteditOpen(false);  
+      } else {
+        toast.error(item?.message || "Category edit failed");
+      }
+
+    } catch (error) {
+      toast.error("Something went wrong");
+      console.error("Edit category error:", error);
     }
 
-    const getCategoryID = () => {
-      fetch(`https://back.ifly.com.uz/api/category/${editID}`)
-      .then(res=>res.json())
-      .then(item => item)
-    }
+    // formani tozalash
+    setNameEn("");
+    setNameDe("");
+    setNameRu("");
 
+
+  }
 
   return (
     <div className='fixed inset-0 bg-black/60 flex  justify-center items-center z-50 overflow-y-auto' >
@@ -56,7 +66,7 @@ function CategoryEdit({editID , getCategory ,seteditOpen}) {
         <button
           onClick={() => seteditOpen(false)}
           className='absolute top-2 right-2 text-white bg-red-500 px-2 py-2 cursor-pointer rounded-full'><MdClose /></button>
-        <h2 className='font-bold text-xl mb-4'>Edit Category</h2>
+        <h2 className='font-bold text-xl mb-4'>Update Category</h2>
         <form onSubmit={editCategoryItem}>
           <label>
             <p className='block mb-1 text-sm font-medium'>Category Name (EN)</p>

@@ -52,6 +52,19 @@ function Category() {
       })
   }
 
+
+  const [dataID ,setDataID]=useState([])
+
+  const getCategoryID = async (id) => {
+    const res = await fetch(`https://back.ifly.com.uz/api/category/${id}`);
+    const item = await res.json();
+    setDataID(item?.data);
+    setEditID(id)
+    seteditOpen(true)
+  }
+
+
+
   return (
     <>
       <div className='shadow-md p-6 bg-white rounded-lg'>
@@ -81,10 +94,7 @@ function Category() {
                   <td className='border border-gray-300 p-2'>{item.name_de}</td>
                   <td className='border border-gray-300 p-2 w-[200px]'>
                     <button 
-                      onClick={()=> {
-                        setEditID(item.id)
-                        seteditOpen(true)
-                      }} 
+                      onClick={()=>getCategoryID(item.id)} 
                       className='px-4 py-2 mr-2 cursor-pointer bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition'>Edit</button>
                     <button
                       onClick={() => deleteCategory(item.id)}
@@ -101,7 +111,7 @@ function Category() {
         </div>
       </div>
       {open && <CategoryMadal setOpen={setOpen} getCategory={getCategory} />}
-      {editOpen && <CategoryEdit editID={editID} seteditOpen={seteditOpen} getCategory={getCategory} />}
+      {editOpen && <CategoryEdit editID={editID} dataID={dataID} seteditOpen={seteditOpen} getCategory={getCategory} />}
     </>
   )
 }
