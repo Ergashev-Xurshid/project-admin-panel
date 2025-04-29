@@ -61,7 +61,7 @@ function Login() {
 
   return (
     <div className='flex items-center justify-center w-full h-[100vh] bg-gray-100'>
-      <div className='bg-white rounded-xl shadow-md p-8 h-[400px] w-[400px]'>
+      <div className='bg-white rounded-xl shadow-md p-8 h-[350px] w-[400px]'>
         <h1 className='font-bold text-2xl text-center mb-6'>Login</h1>
         <form onSubmit={handleSubmit}>
           <label className='mb-4  inline-block w-full'>

@@ -3,6 +3,7 @@ import { toast } from 'react-toastify'
 import { getToken } from '../utils/auth'
 import DiscountModal from './modals/DiscountModal'
 import { noData } from '../assets'
+import DiscountEdit from './editModals/DiscountEdit'
 function Discount() {
 
   // Open modal 
@@ -42,6 +43,19 @@ function Discount() {
   }
 
 
+
+  const [dataID, setDataID] = useState([])
+  const [editID, setEditID] = useState("")
+  // Edit modal 
+  const [editOpen, seteditOpen] = useState(false)
+  const getCategoryID = async (id) => {
+    const res = await fetch(`https://back.ifly.com.uz/api/discount/${id}`);
+    const item = await res.json();
+    setDataID(item?.data);
+    setEditID(id)
+    seteditOpen(true)
+  }
+
   return (
     <>
       <div className='shadow-md p-6 bg-white rounded-lg'>
@@ -72,7 +86,9 @@ function Discount() {
                   <td className='border border-gray-300 p-2'>{item.finished_at}</td>
                   <td className={`border border-gray-300 p-2 ${item.status ? "text-green-600" : "text-red-600"}  `}>{item.status ? "Active" : "Inactive"}</td>
                   <td className='border border-gray-300 p-2 w-[200px]'>
-                    <button className='px-4 py-2 mr-2 cursor-pointer bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition'>Edit</button>
+                    <button 
+                      onClick={()=>getCategoryID(item.id)}
+                      className='px-4 py-2 mr-2 cursor-pointer bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition'>Edit</button>
                     <button
                       onClick={() => deleteDiscount(item.id)}
                       className='px-4 py-2 cursor-pointer bg-red-500 text-white rounded-lg hover:bg-red-600 transition'>Delete</button>
@@ -88,6 +104,7 @@ function Discount() {
         </div>
       </div>
       {open && <DiscountModal setOpen={setOpen} getDiscounts={getDiscounts} />}
+      {editOpen && <DiscountEdit dataID={dataID} editID={editID} seteditOpen={seteditOpen} getDiscounts={getDiscounts} />}
     </>
   )
 }

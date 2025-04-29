@@ -9,11 +9,6 @@ function Category() {
 
   // Open modal 
   const [open, setOpen] = useState(false)
-    // Edit modal 
-    const [editOpen, seteditOpen] = useState(false)
-
-  const [editID , setEditID] =useState("")
-  
 
   const [data, setData] = useState([])
 
@@ -52,8 +47,11 @@ function Category() {
       })
   }
 
-
+  //edit
   const [dataID ,setDataID]=useState([])
+  const [editID , setEditID] =useState("")
+  // Edit modal 
+  const [editOpen, seteditOpen] = useState(false)
 
   const getCategoryID = async (id) => {
     const res = await fetch(`https://back.ifly.com.uz/api/category/${id}`);
