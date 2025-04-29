@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { getToken } from '../utils/auth'
 import { toast } from 'react-toastify'
-import NewsModal from './modals/newsModal'
+import NewsModal from './modals/NewsModal'
 import { noData } from '../assets'
 function News() {
 
