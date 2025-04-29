@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { getToken } from '../utils/auth'
 import { toast } from 'react-toastify'
-import NewsModal from './modals/NewsModal'
 import { noData } from '../assets'
 function News() {
 
@@ -89,7 +88,6 @@ function News() {
           </div> : <span></span>}
         </div>
       </div>
-      {open && <NewsModal setOpen={setOpen} getNews={getNews} />}
     </>
   )
 }
