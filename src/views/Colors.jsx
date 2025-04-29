@@ -3,6 +3,7 @@ import { getToken } from '../utils/auth'
 import { toast } from 'react-toastify'
 import ColorModal from './modals/ColorModal'
 import { noData } from '../assets'
+import ColorEdit from './editModals/ColorEdit'
 
 function Colors() {
 
@@ -48,6 +49,20 @@ function Colors() {
   }
 
 
+
+  const [dataID, setDataID] = useState([])
+  const [editID, setEditID] = useState("")
+  // Edit modal 
+  const [editOpen, seteditOpen] = useState(false)
+  const getColorsID = async (id) => {
+    const res = await fetch(`https://back.ifly.com.uz/api/colors/${id}`);
+    const item = await res.json();
+    setDataID(item?.data);
+    setEditID(id)
+    seteditOpen(true)
+  }
+
+
   return (
     <>
       <div className='shadow-md p-6 bg-white rounded-lg'>
@@ -76,7 +91,9 @@ function Colors() {
                   <td className='border border-gray-300 p-2'>{item.color_ru}</td>
                   <td className='border border-gray-300 p-2'>{item.color_de}</td>
                   <td className='border border-gray-300 p-2 w-[200px]'>
-                    <button className='px-4 py-2 mr-2 cursor-pointer bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition'>Edit</button>
+                    <button 
+                      onClick={()=>getColorsID(item.id)}  
+                      className='px-4 py-2 mr-2 cursor-pointer bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition'>Edit</button>
                     <button
                       onClick={() => deleteColor(item.id)}
                       className='px-4 py-2 cursor-pointer bg-red-500 text-white rounded-lg hover:bg-red-600 transition'>Delete</button>
@@ -92,6 +109,7 @@ function Colors() {
         </div>
       </div>
       {open && <ColorModal setOpen={setOpen} getColors={getColors} />}
+      {editOpen && <ColorEdit dataID={dataID} editID={editID} seteditOpen={seteditOpen} getColors={getColors} />}
     </>
   )
 }
