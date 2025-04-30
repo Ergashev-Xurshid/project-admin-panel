@@ -9,7 +9,6 @@ function News() {
 
   const [data, setData] = useState([])
 
-
   // get News 
   const getNews = () => {
     fetch("https://back.ifly.com.uz/api/news")

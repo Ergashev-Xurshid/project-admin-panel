@@ -9,7 +9,7 @@ const [size , setSize]= useState("");
 
   useEffect(() => {
     if (dataID) {
-      setSize(dataID.discount || "");
+      setSize(dataID.size || "");
     }
   }, [dataID])
 
