@@ -56,7 +56,7 @@ function Sizes() {
     // Edit modal 
     const [editOpen, seteditOpen] = useState(false)
     const getSizeID = async (id) => {
-      const res = await fetch(`https://back.ifly.com.uz/api/discount/${id}`);
+      const res = await fetch(`https://back.ifly.com.uz/api/sizes/${id}`);
       const item = await res.json();
       setDataID(item?.data);
       setEditID(id)

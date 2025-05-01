@@ -34,7 +34,7 @@ function SizesModal({setOpen , getSizes}) {
       })
   
      // formni tozalash 
-    
+     setSize("")
     }
   
 
@@ -54,7 +54,7 @@ function SizesModal({setOpen , getSizes}) {
               value={size}
               onChange={(e) => setSize(e.target.value)}
               className='outline-none w-full p-2 border border-gray-300 rounded mb-1'
-              type="number" />
+              type="text" />
           </label>
           <button className='w-full mt-4 cursor-pointer p-2 bg-green-500 hover:bg-green-600  text-white rounded-lg'>Add Size</button>
         </form>
