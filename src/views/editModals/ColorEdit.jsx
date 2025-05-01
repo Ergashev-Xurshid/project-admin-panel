@@ -59,7 +59,7 @@ function ColorEdit({ editID, getColors, seteditOpen, dataID }) {
 
 
   return (
-    <div className='fixed inset-0 bg-black/60 flex  justify-center items-center z-50 overflow-y-auto' >
+    <div onClick={() => seteditOpen(false)} className='fixed inset-0 bg-black/60 flex  justify-center items-center z-50 overflow-y-auto' >
       <div className='bg-white rounded-lg relative  shadow-md p-6 max-h-[90vh] w-[45%]'>
         <button
           onClick={() => seteditOpen(false)}
