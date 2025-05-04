@@ -67,7 +67,6 @@ function Login() {
           <label className='mb-4  inline-block w-full'>
             <p className='text-gray-700 font-bold text-sm mb-2 block'>Login</p>
           <input 
-            autoComplete='off'
             className='border border-gray-300 p-2 outline-none mb-1 rounded-lg w-full' 
             value={login}
             onChange={(e)=>{

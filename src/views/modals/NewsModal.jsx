@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { getToken } from '../../utils/auth';
 import { MdClose } from "react-icons/md";
 import { toast } from 'react-toastify';
-function NewsModal({ getNews, setOpen }) {
+function NewsModal({ getNews, setOpen , editData }) {
 
 
   const [titleEn, setTitleEn] = useState("");
@@ -13,35 +13,26 @@ function NewsModal({ getNews, setOpen }) {
   const [desDe, setDesDe] = useState("");
   const [image, setImage] = useState(null);
 
-  const addCategoryItem = (e) => {
+  const addNewsItem = (e) => {
     e.preventDefault();
 
-    if (!image) {
-      toast.error("Please upload an image");
-      return;
-    }
+    const formdata = new FormData();
+      formdata.append("title_en",titleEn)
+      formdata.append("title_ru",titleRu)
+      formdata.append("title_de",titleDe)
+      formdata.append("description_en",desEn)
+      formdata.append("description_ru",desRu)
+      formdata.append("description_de",desDe)
+      formdata.append("file",image)
 
-    const formData = new FormData();
-    const fields = {
-      title_en: titleEn,
-      title_ru: titleRu,
-      title_de: titleDe,
-      description_en: desEn,
-      description_ru: desRu,
-      description_de: desDe,
-      image: image
-    };
 
-    Object.entries(fields).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
 
     fetch("https://back.ifly.com.uz/api/news", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${getToken()}`
       },
-      body: formData
+      body: formdata
     })
       .then(res => res.json())
       .then(item => {
@@ -59,25 +50,58 @@ function NewsModal({ getNews, setOpen }) {
           setDesDe("");
           setImage(null);
         } else {
-          toast.error(item?.message || "Something went wrong");
+          toast.error(item?.message?.message);
         }
       });
-
-
   };
 
 
+    useEffect(() => {
+      if (editData?.id) {
+        setTitleEn(editData?.titleEn || "");
+        setTitleRu(editData?.titleRu || "");
+        setTitleDe(editData?.titleDe || "");
+        setDesEn(editData?.desEn || "");
+        setDesRu(editData?.desRu || "");
+        setDesDe(editData?.desDe || "");
+      }
+    }, [editData]);
+
+
+     const editNews = async (e)=>{
+        e.preventDefault()
+    
+        const resurs = await fetch(`https://back.ifly.com.uz/api/news/${editData?.id}`,{
+          method:"PATCH",
+          headers: {
+            "Content-type":"multipart/form-data",
+            "Authorization": `Bearer ${getToken()}`
+          },
+          body: formdata
+        })
+        const item = await resurs.json()
+        if (item?.success) {
+          toast.success(),
+            // ma'lumotlarni yangilash 
+            getNews()
+          // modalni yopish 
+          setOpen(false)
+        } else {
+          toast.error(item?.message?.message[0])
+        }
+      }
+
   return (
     <div onClick={() => setOpen(false)} className='fixed inset-0 bg-black/60 flex  justify-center items-center z-50 overflow-y-auto' >
-      <div onClick={(e) => e.stopPropagation()} className='bg-white rounded-lg relative  shadow-md p-6 max-h-[90vh] w-[45%]'>
+      <div onClick={(e) => e.stopPropagation()} className='bg-white overflow-y-auto rounded-lg relative  shadow-md p-6 max-h-[90vh] w-[45%]'>
         <button
           onClick={() => setOpen(false)}
           className='absolute top-2 right-2 text-white bg-red-500 px-2 py-2 cursor-pointer rounded-full'><MdClose /></button>
-        <h2 className='font-bold text-xl mb-4'>Add Category</h2>
-        <form onSubmit={addCategoryItem}>
+        <h2 className='font-bold text-xl mb-4'> {editData?.id > 0 ? "Edit" : "Add" } News</h2>
+        <form onSubmit={editData?.id > 0 ? editNews : addNewsItem}>
           <label>
             <input
-              required
+              required={!editData?.id}
               value={titleEn}
               placeholder='Title En'
               onChange={(e) => setTitleEn(e.target.value)}
@@ -86,7 +110,7 @@ function NewsModal({ getNews, setOpen }) {
           </label>
           <label>
             <input
-              required
+              required={!editData?.id}
               value={titleRu}
               placeholder='Title Ru'
               onChange={(e) => setTitleRu(e.target.value)}
@@ -95,7 +119,7 @@ function NewsModal({ getNews, setOpen }) {
           </label>
           <label>
             <input
-              required
+              required={!editData?.id}
               value={titleDe}
               placeholder='Title De'
               onChange={(e) => setTitleDe(e.target.value)}
@@ -106,7 +130,7 @@ function NewsModal({ getNews, setOpen }) {
             <textarea
               value={desEn}
               onChange={(e) => setDesEn(e.target.value)}
-              required
+              required={!editData?.id}
               className="outline-none border border-gray-300 w-full p-2  rounded"
               placeholder='Description (EN)'></textarea>
           </label>
@@ -114,7 +138,7 @@ function NewsModal({ getNews, setOpen }) {
             <textarea
               value={desRu}
               onChange={(e) => setDesRu(e.target.value)}
-              required
+              required={!editData?.id}
               className="outline-none border border-gray-300 w-full p-2  rounded"
               placeholder='Description (RU)'></textarea>
           </label>
@@ -122,7 +146,7 @@ function NewsModal({ getNews, setOpen }) {
             <textarea
               value={desDe}
               onChange={(e) => setDesDe(e.target.value)}
-              required
+              required={!editData?.id}
               className="outline-none border border-gray-300 w-full p-2  rounded"
               placeholder='Description (DE)'></textarea>
           </label>
@@ -134,7 +158,7 @@ function NewsModal({ getNews, setOpen }) {
               className='w-full'
               onChange={(e) => setImage(e.target.files[0])} />
           </label>
-          <button className='w-full mt-4 cursor-pointer p-2 bg-green-500 hover:bg-green-600  text-white rounded-lg'>Add Category</button>
+          <button className='w-full mt-4 cursor-pointer p-2 bg-blue-500 hover:bg-blue-600  text-white rounded-lg'>Save</button>
         </form>
       </div>
     </div>
