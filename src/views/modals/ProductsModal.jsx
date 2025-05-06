@@ -53,7 +53,7 @@ function productsModal({ getProducts, setOpen, editData }) {
     fetch("https://back.ifly.com.uz/api/product", {
       method: "POST",
       headers: {
-        "Content-type" : "multipart/form-data"
+        "Content-type" : "multipart/form-data",
         "Authorization": `Bearer ${getToken()}`
       },
       body: formdata
