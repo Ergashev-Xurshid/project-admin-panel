@@ -1,10 +1,58 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getToken } from '../../utils/auth';
 import { MdClose } from "react-icons/md";
 import { toast } from 'react-toastify';
 import { uploud } from '../../assets';
 
 function ProductsModal({ getProducts, setOpen, editData }) {
+
+
+
+  const [sizesList, setSizesList] = useState([]);
+  const [colorsList, setColorsList] = useState([]);
+  const [discountsList, setDiscountsList] = useState([]);
+  const [categoryList, setCategoryList] = useState([]);
+
+  useEffect(() => {
+    const token = getToken();
+
+    const fetchData = async () => {
+      try {
+        const [sizesRes, colorsRes, discountsRes, categoryRes] = await Promise.all([
+          fetch("https://back.ifly.com.uz/api/sizes", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch("https://back.ifly.com.uz/api/colors", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch("https://back.ifly.com.uz/api/discount", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch("https://back.ifly.com.uz/api/category", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+        ]);
+
+        const sizesData = await sizesRes.json();
+        const colorsData = await colorsRes.json();
+        const discountsData = await discountsRes.json();
+        const CategoryData = await categoryRes.json();
+
+        setSizesList(sizesData?.data || []);
+        setColorsList(colorsData?.data || []);
+        setDiscountsList(discountsData?.data || []);
+        setCategoryList(CategoryData?.data || []);
+      } catch (err) {
+        toast.error("Xatolik: ma'lumotlarni yuklab bo'lmadi");
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
+
+
   const [form, setForm] = useState({
     titleEn: '',
     titleRu: '',
@@ -50,50 +98,44 @@ function ProductsModal({ getProducts, setOpen, editData }) {
     formData.append("description_de", form.desDe);
     formData.append("price", form.price);
     formData.append("min_sell", form.priceNum);
-    formData.append("category_id", 2); // static for now
-    formData.append("discount_id", 1); // static for now
+    formData.append("category_id", 2);
+    formData.append("discount_id", form.discountId);
     formData.append("materials", JSON.stringify({ cotton: "80%", wool: "20%" }));
 
     form.sizes.forEach(id => formData.append("sizes_id[]", id));
     form.colors.forEach(id => formData.append("colors_id[]", id));
 
-    if (form.image) {
-      form.image.forEach(img => formData.append("images", img));
-    }
+    form.image.forEach(img => formData.append("files", img));
 
     fetch("https://back.ifly.com.uz/api/product", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${getToken()}`
-        // Do NOT set 'Content-Type' here manually
       },
       body: formData
     })
-    .then(res => res.json())
-    .then(data => {
-      if (data?.success) {
-        toast.success("Product successfully added");
-        getProducts();
-        setOpen(false);
-        setForm({
-          titleEn: '', titleRu: '', titleDe: '',
-          desEn: '', desRu: '', desDe: '',
-          price: '', priceNum: '', image: null,
-          sizes: [], colors: []
-        });
-      } else {
-        toast.error(data?.message?.message || "Something went wrong.");
-      }
-    })
-    .catch(() => toast.error("Server error"));
+      .then(res => res.json())
+      .then(data => {
+        if (data?.success) {
+          toast.success("Product successfully added");
+          getProducts();
+          setOpen(false);
+          setForm({
+            titleEn: '', titleRu: '', titleDe: '',
+            desEn: '', desRu: '', desDe: '',
+            price: '', priceNum: '', image: null,
+            sizes: [], colors: []
+          });
+        } else {
+          toast.error(data?.message?.message || "Something went wrong.");
+        }
+      })
+      .catch(() => toast.error("Server error"));
   };
 
-  // Example static sizes/colors
-  const sizesList = [1, 2, 3];
-  const colorsList = [
-    { id: 4, name: 'Red' },
-    { id: 5, name: 'Blue' }
-  ];
+
+  console.log(categoryList?.[0]?.name_en);
+
 
   return (
     <div onClick={() => setOpen(false)} className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 overflow-y-auto">
@@ -164,40 +206,73 @@ function ProductsModal({ getProducts, setOpen, editData }) {
           </label>
 
           <label>
-            <p className="text-sm font-medium mb-1">Sizes</p>
-            <div className="flex gap-4 mb-4">
-              {sizesList.map(id => (
-                <label key={id} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={form.sizes.includes(id)}
-                    onChange={(e) => handleCheckboxChange(e, 'sizes', id)}
-                  />
-                  Size {id}
-                </label>
+            <p className="text-sm font-medium mb-1">Category</p>
+            <select
+              name="categoryID"
+              onChange={handleInputChange}
+              value={form.category || ""}
+              className="w-full p-2 mb-4 border rounded"
+            >
+              <option value="">Choose a category</option>
+              {categoryList.map(({ id, name_en }) => (
+                <option key={id} value={id}>{name_en}</option>
               ))}
-            </div>
+
+            </select>
           </label>
 
-          <label>
-            <p className="text-sm font-medium mb-1">Colors</p>
-            <div className="flex gap-4 mb-4">
-              {colorsList.map(({ id, name }) => (
-                <label key={id} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={form.colors.includes(id)}
-                    onChange={(e) => handleCheckboxChange(e, 'colors', id)}
-                  />
-                  {name}
-                </label>
+          {sizesList.map(({ id, size }) => (
+            <label key={id} className="flex items-start gap-2 flex-col">
+              <p className="text-sm font-medium">Size</p>
+              <div className='flex gap-2'>
+              <input
+                type="checkbox"
+                checked={form.sizes.includes(id)}
+                onChange={(e) => handleCheckboxChange(e, 'sizes', id)}
+              />
+              {size}
+              </div>
+
+            </label>
+          ))}
+
+
+
+          {colorsList.map(({ id, color_en }) => (
+            <label key={id} className="flex items-start gap-2 flex-col">
+              <p className="text-sm font-medium">Color</p>
+              <div className='flex gap-2'>
+                <input
+                  type="checkbox"
+                  checked={form.colors.includes(id)}
+                  onChange={(e) => handleCheckboxChange(e, 'colors', id)}
+                />
+                {color_en}
+              </div>
+            </label>
+          ))}
+
+          <label className="flex items-start gap-2 flex-col mt-2">
+            <p className="text-sm font-medium mb-1">Discount</p>
+            <select
+              name="discountId"
+              onChange={handleInputChange}
+              value={form.discountId || ""}
+              className="w-full p-2 mb-4 border rounded"
+            >
+              <option value="">Choose a discount</option>
+              {discountsList.map(({ id, discount }) => (
+                <option key={id} value={id}>{discount}%</option>
               ))}
-            </div>
+
+            </select>
           </label>
 
-          <label>
+
+
+          <label className=" gap-2 flex-col">
             <p className="text-sm font-medium mb-1">Upload Images</p>
-            <div className="mb-4 border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer bg-gray-50 hover:bg-gray-100">
+            <div className=" mb-4 border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer bg-gray-50 hover:bg-gray-100">
               <label className="flex flex-col items-center">
                 <img src={uploud} alt="Upload" className="w-12 h-12 mb-2" />
                 <p className="text-sm text-gray-500 mb-1"><strong>Click</strong> or drag to upload</p>
