@@ -62,10 +62,6 @@ function Faq() {
     seteditOpen(true)
   }
 
-
-
-
-
   return (
     <>
       <div className='shadow-md p-6 bg-white rounded-lg'>
