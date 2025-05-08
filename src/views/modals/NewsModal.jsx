@@ -1,168 +1,134 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { getToken } from '../../utils/auth';
 import { MdClose } from "react-icons/md";
 import { toast } from 'react-toastify';
-function NewsModal({ getNews, setOpen , editData }) {
 
+function NewsModal({ getNews, setOpen, editData }) {
+  const [form, setForm] = useState({
+    titleEn: '',
+    titleRu: '',
+    titleDe: '',
+    desEn: '',
+    desRu: '',
+    desDe: '',
+    image: null
+  });
 
-  const [titleEn, setTitleEn] = useState("");
-  const [titleRu, setTitleRu] = useState("");
-  const [titleDe, setTitleDe] = useState("");
-  const [desEn, setDesEn] = useState("");
-  const [desRu, setDesRu] = useState("");
-  const [desDe, setDesDe] = useState("");
-  const [image, setImage] = useState(null);
-
-  const addNewsItem = (e) => {
-    e.preventDefault();
-
-    const formdata = new FormData();
-      formdata.append("title_en",titleEn)
-      formdata.append("title_ru",titleRu)
-      formdata.append("title_de",titleDe)
-      formdata.append("description_en",desEn)
-      formdata.append("description_ru",desRu)
-      formdata.append("description_de",desDe)
-      formdata.append("file",image)
-
-
-
-    fetch("https://back.ifly.com.uz/api/news", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${getToken()}`
-      },
-      body: formdata
-    })
-      .then(res => res.json())
-      .then(item => {
-        if (item?.success) {
-          toast.success("News successfully added");
-          getNews();
-          setOpen(false);
-
-          // Formni tozalash
-          setTitleEn("");
-          setTitleRu("");
-          setTitleDe("");
-          setDesEn("");
-          setDesRu("");
-          setDesDe("");
-          setImage(null);
-        } else {
-          toast.error(item?.message?.message);
-        }
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        titleEn: editData.title_en || '',
+        titleRu: editData.title_ru || '',
+        titleDe: editData.title_de || '',
+        desEn: editData.description_en || '',
+        desRu: editData.description_ru || '',
+        desDe: editData.description_de || '',
+        image: null
       });
+    }
+  }, [editData]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e) => {
+    setForm(prev => ({ ...prev, image: e.target.files[0] }));
+  };
 
-    useEffect(() => {
-      if (editData?.id) {
-        setTitleEn(editData?.titleEn || "");
-        setTitleRu(editData?.titleRu || "");
-        setTitleDe(editData?.titleDe || "");
-        setDesEn(editData?.desEn || "");
-        setDesRu(editData?.desRu || "");
-        setDesDe(editData?.desDe || "");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+
+    formData.append("title_en", form.titleEn);
+    formData.append("title_ru", form.titleRu);
+    formData.append("title_de", form.titleDe);
+    formData.append("description_en", form.desEn);
+    formData.append("description_ru", form.desRu);
+    formData.append("description_de", form.desDe);
+    if (form.image) formData.append("file", form.image);
+
+    const url = editData
+      ? `https://back.ifly.com.uz/api/news/${editData.id}`
+      : "https://back.ifly.com.uz/api/news";
+
+    const method = editData ? "PATCH" : "POST";
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          Authorization: `Bearer ${getToken()}`
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (data?.success) {
+        toast.success(editData ? "News updated!" : "News added!");
+        getNews();
+        setOpen(false);
+      } else {
+        toast.error(data?.message?.message || "Xatolik yuz berdi");
       }
-    }, [editData]);
-
-
-     const editNews = async (e)=>{
-        e.preventDefault()
-    
-        const resurs = await fetch(`https://back.ifly.com.uz/api/news/${editData?.id}`,{
-          method:"PATCH",
-          headers: {
-            "Content-type":"multipart/form-data",
-            "Authorization": `Bearer ${getToken()}`
-          },
-          body: formdata
-        })
-        const item = await resurs.json()
-        if (item?.success) {
-          toast.success(),
-            // ma'lumotlarni yangilash 
-            getNews()
-          // modalni yopish 
-          setOpen(false)
-        } else {
-          toast.error(item?.message?.message[0])
-        }
-      }
+    } catch (error) {
+      toast.error("Server bilan bog‘lanishda xatolik");
+    }
+  };
 
   return (
-    <div onClick={() => setOpen(false)} className='fixed inset-0 bg-black/60 flex  justify-center items-center z-50 overflow-y-auto' >
-      <div onClick={(e) => e.stopPropagation()} className='bg-white overflow-y-auto rounded-lg relative  shadow-md p-6 max-h-[90vh] w-[45%]'>
+    <div onClick={() => setOpen(false)} className='fixed inset-0 bg-black/60 flex justify-center items-center z-50 overflow-y-auto'>
+      <div onClick={(e) => e.stopPropagation()} className='bg-white overflow-y-auto rounded-lg relative shadow-md p-6 max-h-[90vh] w-[45%]'>
         <button
           onClick={() => setOpen(false)}
-          className='absolute top-2 right-2 text-white bg-red-500 px-2 py-2 cursor-pointer rounded-full'><MdClose /></button>
-        <h2 className='font-bold text-xl mb-4'> {editData?.id > 0 ? "Edit" : "Add" } News</h2>
-        <form onSubmit={editData?.id > 0 ? editNews : addNewsItem}>
-          <label>
+          className='absolute top-2 right-2 text-white bg-red-500 px-2 py-2 cursor-pointer rounded-full'>
+          <MdClose />
+        </button>
+        <h2 className='font-bold text-xl mb-4'>{editData ? "Edit" : "Add"} News</h2>
+
+        <form onSubmit={handleSubmit}>
+          {['titleEn', 'titleRu', 'titleDe'].map((field, i) => (
             <input
-              required={!editData?.id}
-              value={titleEn}
-              placeholder='Title En'
-              onChange={(e) => setTitleEn(e.target.value)}
+              key={field}
+              name={field}
+              value={form[field]}
+              onChange={handleChange}
+              required={!editData}
+              placeholder={`Title ${field.slice(-2).toUpperCase()}`}
               className='outline-none w-full p-2 border border-gray-300 rounded mb-1'
-              type="text" />
-          </label>
-          <label>
-            <input
-              required={!editData?.id}
-              value={titleRu}
-              placeholder='Title Ru'
-              onChange={(e) => setTitleRu(e.target.value)}
-              className='outline-none w-full p-2 border border-gray-300 rounded mb-1'
-              type="text" />
-          </label>
-          <label>
-            <input
-              required={!editData?.id}
-              value={titleDe}
-              placeholder='Title De'
-              onChange={(e) => setTitleDe(e.target.value)}
-              className='outline-none w-full p-2 border border-gray-300 rounded mb-1'
-              type="text" />
-          </label>
-          <label>
+              type="text"
+            />
+          ))}
+
+          {['desEn', 'desRu', 'desDe'].map((field, i) => (
             <textarea
-              value={desEn}
-              onChange={(e) => setDesEn(e.target.value)}
-              required={!editData?.id}
-              className="outline-none border border-gray-300 w-full p-2  rounded"
-              placeholder='Description (EN)'></textarea>
-          </label>
-          <label>
-            <textarea
-              value={desRu}
-              onChange={(e) => setDesRu(e.target.value)}
-              required={!editData?.id}
-              className="outline-none border border-gray-300 w-full p-2  rounded"
-              placeholder='Description (RU)'></textarea>
-          </label>
-          <label>
-            <textarea
-              value={desDe}
-              onChange={(e) => setDesDe(e.target.value)}
-              required={!editData?.id}
-              className="outline-none border border-gray-300 w-full p-2  rounded"
-              placeholder='Description (DE)'></textarea>
-          </label>
-          <label>
-            <input
-              required
-              type="file"
-              accept="image/*"
-              className='w-full'
-              onChange={(e) => setImage(e.target.files[0])} />
-          </label>
-          <button className='w-full mt-4 cursor-pointer p-2 bg-blue-500 hover:bg-blue-600  text-white rounded-lg'>Save</button>
+              key={field}
+              name={field}
+              value={form[field]}
+              onChange={handleChange}
+              required={!editData}
+              placeholder={`Description ${field.slice(-2).toUpperCase()}`}
+              className='outline-none border border-gray-300 w-full p-2 rounded mb-1'
+            />
+          ))}
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className='w-full mb-3'
+            required={!editData}
+          />
+
+          <button type="submit" className='w-full mt-4 cursor-pointer p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg'>
+            {editData ? 'Update' : 'Create'} News
+          </button>
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default NewsModal
+export default NewsModal;

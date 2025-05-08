@@ -5,53 +5,10 @@ import { toast } from 'react-toastify';
 import { uploud } from '../../assets';
 
 function ProductsModal({ getProducts, setOpen, editData }) {
-
-
-
   const [sizesList, setSizesList] = useState([]);
   const [colorsList, setColorsList] = useState([]);
   const [discountsList, setDiscountsList] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
-
-  useEffect(() => {
-    const token = getToken();
-
-    const fetchData = async () => {
-      try {
-        const [sizesRes, colorsRes, discountsRes, categoryRes] = await Promise.all([
-          fetch("https://back.ifly.com.uz/api/sizes", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch("https://back.ifly.com.uz/api/colors", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch("https://back.ifly.com.uz/api/discount", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch("https://back.ifly.com.uz/api/category", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-        ]);
-
-        const sizesData = await sizesRes.json();
-        const colorsData = await colorsRes.json();
-        const discountsData = await discountsRes.json();
-        const CategoryData = await categoryRes.json();
-
-        setSizesList(sizesData?.data || []);
-        setColorsList(colorsData?.data || []);
-        setDiscountsList(discountsData?.data || []);
-        setCategoryList(CategoryData?.data || []);
-      } catch (err) {
-        toast.error("Xatolik: ma'lumotlarni yuklab bo'lmadi");
-      }
-    };
-
-    fetchData();
-  }, []);
-
-
-
 
   const [form, setForm] = useState({
     titleEn: '',
@@ -62,31 +19,90 @@ function ProductsModal({ getProducts, setOpen, editData }) {
     desDe: '',
     price: '',
     priceNum: '',
-    image: null,
+    image: [],
     sizes: [],
     colors: [],
+    categoryId: '',
+    discountId: '',
+    materials: [{ name: '', value: '' }]
   });
 
-  const handleInputChange = (e) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = getToken();
+        const [sizesRes, colorsRes, discountsRes, categoryRes] = await Promise.all([
+          fetch("https://back.ifly.com.uz/api/sizes", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch("https://back.ifly.com.uz/api/colors", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch("https://back.ifly.com.uz/api/discount", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch("https://back.ifly.com.uz/api/category", { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+
+        setSizesList((await sizesRes.json())?.data || []);
+        setColorsList((await colorsRes.json())?.data || []);
+        setDiscountsList((await discountsRes.json())?.data || []);
+        setCategoryList((await categoryRes.json())?.data || []);
+      } catch {
+        toast.error("Ma'lumotlarni yuklab bo‘lmadi");
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        titleEn: editData.title_en || '',
+        titleRu: editData.title_ru || '',
+        titleDe: editData.title_de || '',
+        desEn: editData.description_en || '',
+        desRu: editData.description_ru || '',
+        desDe: editData.description_de || '',
+        price: editData.price || '',
+        priceNum: editData.min_sell || '',
+        image: [],
+        sizes: editData.sizes?.map(s => s.id) || [],
+        colors: editData.colors?.map(c => c.id) || [],
+        categoryId: editData.category?.id || '',
+        discountId: editData.discount?.id || '',
+        materials: editData.materials
+          ? Object.entries(editData.materials).map(([name, value]) => ({ name, value }))
+          : [{ name: '', value: '' }]
+      });
+    }
+  }, [editData]);
+
+  const handleChange = e => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckbox = (key, id) => {
+    setForm(prev => {
+      const updated = prev[key].includes(id)
+        ? prev[key].filter(item => item !== id)
+        : [...prev[key], id];
+      return { ...prev, [key]: updated };
+    });
+  };
+
+  const handleMaterialChange = (index, key, value) => {
+    const updated = [...form.materials];
+    updated[index][key] = value;
+    setForm(prev => ({ ...prev, materials: updated }));
+  };
+
+  const addMaterial = () => setForm(prev => ({ ...prev, materials: [...prev.materials, { name: '', value: '' }] }));
+  const removeMaterial = (index) => {
+    setForm(prev => ({ ...prev, materials: prev.materials.filter((_, i) => i !== index) }));
   };
 
   const handleFileChange = (e) => {
     setForm(prev => ({ ...prev, image: Array.from(e.target.files) }));
   };
 
-  const handleCheckboxChange = (e, key, id) => {
-    const checked = e.target.checked;
-    setForm(prev => {
-      const updated = checked
-        ? [...prev[key], id]
-        : prev[key].filter(item => item !== id);
-      return { ...prev, [key]: updated };
-    });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
 
@@ -98,192 +114,148 @@ function ProductsModal({ getProducts, setOpen, editData }) {
     formData.append("description_de", form.desDe);
     formData.append("price", form.price);
     formData.append("min_sell", form.priceNum);
-    formData.append("category_id", 2);
+    formData.append("category_id", form.categoryId);
     formData.append("discount_id", form.discountId);
-    formData.append("materials", JSON.stringify({ cotton: "80%", wool: "20%" }));
 
     form.sizes.forEach(id => formData.append("sizes_id[]", id));
     form.colors.forEach(id => formData.append("colors_id[]", id));
-
     form.image.forEach(img => formData.append("files", img));
 
-    fetch("https://back.ifly.com.uz/api/product", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${getToken()}`
-      },
-      body: formData
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data?.success) {
-          toast.success("Product successfully added");
-          getProducts();
-          setOpen(false);
-          setForm({
-            titleEn: '', titleRu: '', titleDe: '',
-            desEn: '', desRu: '', desDe: '',
-            price: '', priceNum: '', image: null,
-            sizes: [], colors: []
-          });
-        } else {
-          toast.error(data?.message?.message || "Something went wrong.");
-        }
-      })
-      .catch(() => toast.error("Server error"));
+    const materials = {};
+    form.materials.forEach(({ name, value }) => {
+      if (name && value) materials[name] = value;
+    });
+    formData.append("materials", JSON.stringify(materials));
+
+    const url = editData
+      ? `https://back.ifly.com.uz/api/product/${editData.id}`
+      : "https://back.ifly.com.uz/api/product";
+
+    const method = editData ? "PATCH" : "POST";
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body: formData
+      });
+      const result = await res.json();
+
+      if (result?.success) {
+        toast.success(editData ? "Product updated!" : "Product created!");
+        getProducts();
+        setOpen(false);
+      } else {
+        toast.error(result?.message?.message || "Xatolik yuz berdi");
+      }
+    } catch (error) {
+      toast.error("Server bilan bog‘lanishda xatolik");
+    }
   };
-
-
-  console.log(categoryList?.[0]?.name_en);
-
 
   return (
     <div onClick={() => setOpen(false)} className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 overflow-y-auto">
       <div onClick={e => e.stopPropagation()} className="relative bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <button onClick={() => setOpen(false)} className="absolute top-2 right-2 text-white bg-red-500 p-2 rounded-full"><MdClose /></button>
-        <h2 className="text-xl font-bold mb-4">{editData?.id ? 'Edit' : 'Add'} Product</h2>
+        <h2 className="text-xl font-bold mb-4">{editData ? 'Edit Product' : 'Add Product'}</h2>
 
         <form onSubmit={handleSubmit}>
-          {[
-            { label: 'Product Title (English)', name: 'titleEn' },
-            { label: 'Product Title (Russian)', name: 'titleRu' },
-            { label: 'Product Title (German)', name: 'titleDe' },
-          ].map(({ label, name }) => (
-            <label key={name}>
-              <p className="text-sm font-medium mb-1">{label}</p>
-              <input
-                name={name}
-                value={form[name]}
-                onChange={handleInputChange}
-                required={!editData?.id}
-                className="w-full p-2 mb-4 border rounded"
-                type="text"
-                placeholder={label}
-              />
-            </label>
-          ))}
-
-          {[
-            { label: 'Product Description (English)', name: 'desEn' },
-            { label: 'Product Description (Russian)', name: 'desRu' },
-            { label: 'Product Description (German)', name: 'desDe' },
-          ].map(({ label, name }) => (
-            <label key={name}>
-              <p className="text-sm font-medium mb-1">{label}</p>
-              <textarea
-                name={name}
-                value={form[name]}
-                onChange={handleInputChange}
-                required={!editData?.id}
-                className="w-full p-2 mb-4 border rounded"
-                placeholder={label}
-              />
-            </label>
-          ))}
-
-          <label>
-            <p className="text-sm font-medium mb-1">Price</p>
+          {/* Titles & Descriptions */}
+          {['titleEn', 'titleRu', 'titleDe'].map(key => (
             <input
-              name="price"
-              type="number"
-              value={form.price}
-              onChange={handleInputChange}
-              className="w-full p-2 mb-4 border rounded"
-              required={!editData?.id}
+              key={key}
+              name={key}
+              value={form[key]}
+              onChange={handleChange}
+              className="w-full mb-3 p-2 border rounded"
+              placeholder={`Title ${key.slice(-2).toUpperCase()}`}
+              required
             />
-          </label>
-
-          <label>
-            <p className="text-sm font-medium mb-1">Minimal sotish miqdori</p>
-            <input
-              name="priceNum"
-              type="number"
-              value={form.priceNum}
-              onChange={handleInputChange}
-              className="w-full p-2 mb-4 border rounded"
-              required={!editData?.id}
+          ))}
+          {['desEn', 'desRu', 'desDe'].map(key => (
+            <textarea
+              key={key}
+              name={key}
+              value={form[key]}
+              onChange={handleChange}
+              className="w-full mb-3 p-2 border rounded"
+              placeholder={`Description ${key.slice(-2).toUpperCase()}`}
+              required
             />
-          </label>
-
-          <label>
-            <p className="text-sm font-medium mb-1">Category</p>
-            <select
-              name="categoryID"
-              onChange={handleInputChange}
-              value={form.category || ""}
-              className="w-full p-2 mb-4 border rounded"
-            >
-              <option value="">Choose a category</option>
-              {categoryList.map(({ id, name_en }) => (
-                <option key={id} value={id}>{name_en}</option>
-              ))}
-
-            </select>
-          </label>
-
-          {sizesList.map(({ id, size }) => (
-            <label key={id} className="flex items-start gap-2 flex-col">
-              <p className="text-sm font-medium">Size</p>
-              <div className='flex gap-2'>
-              <input
-                type="checkbox"
-                checked={form.sizes.includes(id)}
-                onChange={(e) => handleCheckboxChange(e, 'sizes', id)}
-              />
-              {size}
-              </div>
-
-            </label>
           ))}
 
+          {/* Numeric fields */}
+          <input type="number" name="price" value={form.price} onChange={handleChange} placeholder="Price" className="w-full mb-3 p-2 border rounded" required />
+          <input type="number" name="priceNum" value={form.priceNum} onChange={handleChange} placeholder="Minimal sotish soni" className="w-full mb-3 p-2 border rounded" required />
 
+          {/* Category */}
+          <select name="categoryId" value={form.categoryId} onChange={handleChange} className="w-full mb-3 p-2 border rounded">
+            <option value="">Kategoriya tanlang</option>
+            {categoryList.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name_en}</option>
+            ))}
+          </select>
 
-          {colorsList.map(({ id, color_en }) => (
-            <label key={id} className="flex items-start gap-2 flex-col">
-              <p className="text-sm font-medium">Color</p>
-              <div className='flex gap-2'>
+          {/* Sizes */}
+          <div className="mb-3">
+            <p className="font-medium">Sizes:</p>
+            {sizesList.map(size => (
+              <label key={size.id} className="inline-block mr-4">
                 <input
                   type="checkbox"
-                  checked={form.colors.includes(id)}
-                  onChange={(e) => handleCheckboxChange(e, 'colors', id)}
-                />
-                {color_en}
-              </div>
-            </label>
-          ))}
-
-          <label className="flex items-start gap-2 flex-col mt-2">
-            <p className="text-sm font-medium mb-1">Discount</p>
-            <select
-              name="discountId"
-              onChange={handleInputChange}
-              value={form.discountId || ""}
-              className="w-full p-2 mb-4 border rounded"
-            >
-              <option value="">Choose a discount</option>
-              {discountsList.map(({ id, discount }) => (
-                <option key={id} value={id}>{discount}%</option>
-              ))}
-
-            </select>
-          </label>
-
-
-
-          <label className=" gap-2 flex-col">
-            <p className="text-sm font-medium mb-1">Upload Images</p>
-            <div className=" mb-4 border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer bg-gray-50 hover:bg-gray-100">
-              <label className="flex flex-col items-center">
-                <img src={uploud} alt="Upload" className="w-12 h-12 mb-2" />
-                <p className="text-sm text-gray-500 mb-1"><strong>Click</strong> or drag to upload</p>
-                <p className="text-xs text-gray-500">Multiple images allowed</p>
-                <input type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
+                  checked={form.sizes.includes(size.id)}
+                  onChange={() => handleCheckbox('sizes', size.id)}
+                /> {size.size}
               </label>
-            </div>
-          </label>
+            ))}
+          </div>
 
-          <button className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 transition">
-            {editData?.id ? 'Update Product' : 'Save Product'}
+          {/* Colors */}
+          <div className="mb-3">
+            <p className="font-medium">Colors:</p>
+            {colorsList.map(color => (
+              <label key={color.id} className="inline-block mr-4">
+                <input
+                  type="checkbox"
+                  checked={form.colors.includes(color.id)}
+                  onChange={() => handleCheckbox('colors', color.id)}
+                /> {color.color_en}
+              </label>
+            ))}
+          </div>
+
+          {/* Discount */}
+          <select name="discountId" value={form.discountId} onChange={handleChange} className="w-full mb-3 p-2 border rounded">
+            <option value="">Chegirma tanlang</option>
+            {discountsList.map(dis => (
+              <option key={dis.id} value={dis.id}>{dis.discount}%</option>
+            ))}
+          </select>
+
+          {/* Materials */}
+          <div className="mb-3">
+            <p className="font-medium mb-1">Materials:</p>
+            {form.materials.map((mat, i) => (
+              <div key={i} className="flex gap-2 mb-2">
+                <input value={mat.name} onChange={(e) => handleMaterialChange(i, 'name', e.target.value)} placeholder="Nomi" className="flex-1 p-2 border rounded" />
+                <input value={mat.value} onChange={(e) => handleMaterialChange(i, 'value', e.target.value)} placeholder="Qiymat" className="w-24 p-2 border rounded" />
+                <button type="button" onClick={() => removeMaterial(i)} className="text-red-500">✕</button>
+              </div>
+            ))}
+            <button type="button" onClick={addMaterial} className="text-blue-500 text-sm">+ Add Material</button>
+          </div>
+
+          {/* Upload */}
+          <div className="mb-4 border-dashed border-2 border-gray-300 rounded-lg p-4 bg-gray-50 hover:bg-gray-100">
+            <label className="flex flex-col items-center cursor-pointer">
+              <img src={uploud} alt="Upload" className="w-12 h-12 mb-2" />
+              <p className="text-sm">Click or drag to upload images</p>
+              <input type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
+            </label>
+          </div>
+
+          <button type="submit" className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">
+            {editData ? 'Update Product' : 'Create Product'}
           </button>
         </form>
       </div>

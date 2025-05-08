@@ -46,7 +46,10 @@ const [editData , setEditData] = useState()
       <div className='shadow-md p-6 bg-white rounded-lg'>
         <div className='flex  justify-between'>
           <h2 className='font-bold text-xl mb-6'>Products</h2>
-          <button onClick={() =>setOpen(true)} className='cursor-pointer text-white py-2 px-4 bg-green-500 hover:bg-green-600 rounded-lg mb-4 transition-all duration-150  '>Add Product</button>
+          <button onClick={() =>{
+            setOpen(true)
+            setEditData(null)
+            }} className='cursor-pointer text-white py-2 px-4 bg-green-500 hover:bg-green-600 rounded-lg mb-4 transition-all duration-150  '>Add Product</button>
         </div>
         <div>
           <table className='min-w-full table-auto'>
@@ -82,7 +85,10 @@ const [editData , setEditData] = useState()
                   <td className='border border-gray-300 p-2'>{Object.keys(item.materials)[0]}                </td>
                   <td className='border border-gray-300 p-2'>
                     <button 
-                      onClick={()=>setEditData(item)}
+                      onClick={()=>{
+                        setOpen(true)
+                        setEditData(item)
+                      }}
                       className='px-4 py-2 mr-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition cursor-pointer'>Edit</button>
                     <button
                       onClick={() => deleteProduccts(item.id)}
