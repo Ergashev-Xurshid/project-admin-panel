@@ -29,10 +29,10 @@ function Products() {
     })
     const item = await res.json();
     if (item?.success) {
-      toast.success(item?.data?.message)
+      toast.success("Product delete success")
       getProducts()
     } else {
-      toast.error(item?.message?.message)
+      toast.error("Product delete error")
     }
   }
 
