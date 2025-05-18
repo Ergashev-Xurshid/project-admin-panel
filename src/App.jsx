@@ -2,7 +2,6 @@ import React from 'react';
 import { createBrowserRouter , createRoutesFromElements, RouterProvider ,Route } from 'react-router-dom';
 //pages
 import Login from './components/Login';
-import Home from './pages/home/Home';
 //admin views
 import Products from './views/Products';
 import Category from './views/Category';
@@ -22,8 +21,7 @@ function App() {
   const routes = createBrowserRouter (
     createRoutesFromElements(
         <Route path="/"  element={<RootLayout/>}>
-          <Route index element={<Home />} />
-          <Route path="login" element={<Login />} />
+          <Route index element={<Login />} />
           {/* Admin page  */}
           <Route path="admin" element={<AdminLayout/>}>
             <Route index element={<Products />} />
